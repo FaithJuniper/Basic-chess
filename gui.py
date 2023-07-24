@@ -70,17 +70,23 @@ class gui:
 
     def type(self, window, event):
         writing_font = pygame.font.Font(None, 22)
+        if self.game_started:
+            rect = (480, 245, 200, 30)
+            pos = (485, 253)
+        else:
+            rect = (495, 345, 130, 30)
+            pos = (500, 353)
         if event.key == pygame.K_BACKSPACE:
             # Deletes a character in the 'textbox'
-            pygame.draw.rect(window, (186, 140, 99), (495, 345, 130, 30))
+            pygame.draw.rect(window, (186, 140, 99), rect)
             self.current_text = self.current_text[:-1]
             self.current_input = writing_font.render(self.current_text, True, (0, 0, 0))
-            window.blit(self.current_input, (500, 353))
+            window.blit(self.current_input, pos)
         else:
             # Adds a character in the 'textbox'
             self.current_text += event.unicode
             self.current_input = writing_font.render(self.current_text, True, (0, 0, 0))
-            window.blit(self.current_input, (500, 353))
+            window.blit(self.current_input, pos)
 
     def click(self, window):
         pos = pygame.mouse.get_pos()
@@ -92,5 +98,37 @@ class gui:
                         for x in range(760):
                             if x % 10 == 0 and ((475 < x < 725) and (65 < y < 405)):
                                 pygame.draw.rect(window, (48, 91, 71), (x, y, 5, 5))
+                self.create(window)
             elif self.create_rect.collidepoint(pos):
                 pygame.draw.rect(window, (53, 101, 77), (475, 65, 250, 340))
+                for y in range(480):
+                    if y % 10 == 0:
+                        for x in range(760):
+                            if x % 10 == 0 and ((475 < x < 725) and (65 < y < 405)):
+                                pygame.draw.rect(window, (48, 91, 71), (x, y, 5, 5))
+                self.create(window)
+
+    def create(self, window):
+        self.game_started = True
+
+        # Draws chat box
+        pygame.draw.rect(window, (245, 245, 220), (480, 40, 240, 200))
+        pygame.draw.rect(window, (101, 78, 58), (475, 35, 250, 210), 5)
+        pygame.draw.rect(window, (186, 140, 99), (480, 245, 200, 30))
+        pygame.draw.rect(window, (101, 78, 58), (475, 240, 210, 40), 5)
+        pygame.draw.rect(window, (186, 140, 99), (685, 245, 35, 30))
+        pygame.draw.rect(window, (101, 78, 58), (680, 240, 45, 40), 5)
+
+        # Font styles
+        writing_font = pygame.font.Font(None, 22)
+        arrow_font = pygame.font.Font(None, 30)
+
+        # Adds 'textbox'
+        self.current_text = ""
+        text_input = writing_font.render(self.current_text, True, (0, 0, 0))
+        self.current_input = text_input
+        window.blit(text_input, (485, 253))
+
+        # Adds text
+        arrow = arrow_font.render(">", True, (0, 0, 0))
+        window.blit(arrow, (696, 248))
