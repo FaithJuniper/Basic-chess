@@ -9,7 +9,6 @@ class gui:
         # Current text values
         self.current_text = ""
         self.current_input = None
-        self.chat_text = []
 
         # The base rectangles of buttons
         self.join_rect = None
@@ -23,6 +22,9 @@ class gui:
         self.title_font = pygame.font.Font(None, 32)
         self.writing_font = pygame.font.Font(None, 22)
         self.arrow_font = pygame.font.Font(None, 30)
+
+        # Server object
+        self.server = None
 
     def draw_menu(self, window):
         # Draws background
@@ -99,7 +101,7 @@ class gui:
         if self.game_started:
             # Sends message
             if self.send_rect.collidepoint(pos):
-                server.send_message(self.current_text)
+                self.server.send_message(self.current_text)
                 self.current_text = ""
         else:
             # Starts game
@@ -112,7 +114,7 @@ class gui:
                                 pygame.draw.rect(window, (48, 91, 71), (x, y, 5, 5))
                 address = self.current_text
                 self.create(window)
-                server.join(address, window, self.chat_text, self.writing_font)
+                self.server = server.server(window, False, address)
             elif self.create_rect.collidepoint(pos):
                 pygame.draw.rect(window, (53, 101, 77), (475, 65, 250, 340))
                 for y in range(480):
@@ -121,7 +123,7 @@ class gui:
                             if x % 10 == 0 and ((475 < x < 725) and (65 < y < 405)):
                                 pygame.draw.rect(window, (48, 91, 71), (x, y, 5, 5))
                 self.create(window)
-                server.new_server(window, self.chat_text, self.writing_font)
+                self.server = server.server(window, True, "")
 
     def create(self, window):
         self.game_started = True

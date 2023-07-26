@@ -2,97 +2,82 @@ import socket
 import threading
 import pygame
 
-sender = None
-oppo_title = ""
-play_title = ""
-window = None
-chat_text = None
-writing_font = None
 
+class server:
+    def __init__(self, window, host, text):
+        self.window = window
+        self.chat_text = []
+        self.writing_font = pygame.font.Font(None, 22)
+        self.sender = None
+        if host:
+            self.opp_title = "P2: "
+            self.play_title = "P1: "
+            self.new_server()
+        else:
+            self.opp_title = "P1: "
+            self.play_title = "P2: "
+            self.join(text)
 
-def new_server(wind, chat, writing):
-    # Appoints graphics
-    global oppo_title, play_title, window, chat_text, writing_font
-    oppo_title = "P2: "
-    play_title = "P1: "
-    window = wind
-    chat_text = chat
-    writing_font = writing
+    def new_server(self):
+        # Creates new server
+        new_socket = socket.socket()
+        host_name = socket.gethostname()
+        ip = socket.gethostbyname(host_name)
+        port = 8080
+        new_socket.bind((host_name, port))
+        self.post("Your game ID is " + ip, "")
 
-    # Creates new server
-    new_socket = socket.socket()
-    host_name = socket.gethostname()
-    ip = socket.gethostbyname(host_name)
-    port = 8080
-    new_socket.bind((host_name, port))
-    post("Your game ID is " + ip, "")
+        # Starts a new thread to listen for connections
+        listen_thread = threading.Thread(target=self.listening, args=([new_socket]))
+        listen_thread.start()
 
-    # Starts a new thread to listen for connections
-    listen_thread = threading.Thread(target=listening, args=([new_socket]))
-    listen_thread.start()
+    def join(self, address):
+        # Connects to an existing server
+        new_socket = socket.socket()
+        self.sender = new_socket
+        port = 8080
+        new_socket.connect((address, port))
+        self.post("Connected!", "")
 
+        # Starts a new thread to listen for messages
+        y = threading.Thread(target=self.rec, args=([new_socket]))
+        y.start()
 
-def join(address, wind, chat, writing):
-    # Appoints graphics
-    global oppo_title, play_title, window, chat_text, writing_font, sender
-    oppo_title = "P1: "
-    play_title = "P2: "
-    window = wind
-    chat_text = chat
-    writing_font = writing
+    def listening(self, new_socket):
+        # Listens for a connection
+        new_socket.listen(1)
+        conn, address = new_socket.accept()
+        self.sender = conn
+        self.post("Player 2 has joined.", "")
+        y = threading.Thread(target=self.rec, args=([conn]))
+        y.start()
 
-    # Connects to an existing server
-    new_socket = socket.socket()
-    sender = new_socket
-    server_host = address
-    port = 8080
-    new_socket.connect((server_host, port))
-    post("Connected!", "")
+    def rec(self, sock):
+        # Receives messages from other player
+        while True:
+            mess = sock.recv(8080)
+            mess = mess.decode()
+            self.post(str(mess), self.opp_title)
 
-    # Starts a new thread to listen for messages
-    y = threading.Thread(target=rec, args=([new_socket]))
-    y.start()
+    def send_message(self, message):
+        # Sends messages to other player
+        self.sender.send(message.encode())
+        self.post(message, self.play_title)
 
+    def post(self, text, title):
+        self.chat_text.append(title + text)
 
-def listening(new_socket):
-    # Listens for a connection
-    new_socket.listen(1)
-    conn, address = new_socket.accept()
-    global sender
-    sender = conn
-    post("Player 2 has joined.", "")
-    y = threading.Thread(target=rec, args=([conn]))
-    y.start()
+        # Resets text box
+        pygame.draw.rect(self.window, (186, 140, 99), (480, 245, 200, 30))
 
+        # Scrolls down
+        if len(self.chat_text) > 10:
+            self.chat_text.pop(0)
+            pygame.draw.rect(self.window, (245, 245, 220), (480, 40, 240, 200))
 
-def rec(sock):
-    # Receives messages from other player
-    while True:
-        mess = sock.recv(8080)
-        mess = mess.decode()
-        post(str(mess), oppo_title)
-
-
-def send_message(message):
-    # Sends messages to other player
-    sender.send(message.encode())
-    post(message, play_title)
-
-
-def post(text, title):
-    chat_text.append(title + text)
-
-    # Resets text box
-    pygame.draw.rect(window, (186, 140, 99), (480, 245, 200, 30))
-
-    # Scrolls down
-    if len(chat_text) > 10:
-        chat_text.pop(0)
-        pygame.draw.rect(window, (245, 245, 220), (480, 40, 240, 200))
-
-    # Posts new text
-    y = 47
-    for text in chat_text:
-        text_input = writing_font.render(text, True, (0, 0, 0))
-        window.blit(text_input, (485, y))
-        y += 19
+        # Posts new text
+        y = 47
+        for text in self.chat_text:
+            text_input = self.writing_font.render(text, True, (0, 0, 0))
+            self.window.blit(text_input, (485, y))
+            y += 19
