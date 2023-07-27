@@ -95,7 +95,7 @@ class gui:
             self.current_input = self.writing_font.render(self.current_text, True, (0, 0, 0))
             window.blit(self.current_input, pos)
 
-    def click(self, window):
+    def click(self, window, board):
         pos = pygame.mouse.get_pos()
 
         if self.game_started:
@@ -114,7 +114,7 @@ class gui:
                                 pygame.draw.rect(window, (48, 91, 71), (x, y, 5, 5))
                 address = self.current_text
                 self.create(window)
-                self.server = server.server(window, False, address)
+                self.server = server.server(window, False, address, board)
             elif self.create_rect.collidepoint(pos):
                 pygame.draw.rect(window, (53, 101, 77), (475, 65, 250, 340))
                 for y in range(480):
@@ -123,7 +123,7 @@ class gui:
                             if x % 10 == 0 and ((475 < x < 725) and (65 < y < 405)):
                                 pygame.draw.rect(window, (48, 91, 71), (x, y, 5, 5))
                 self.create(window)
-                self.server = server.server(window, True, "")
+                self.server = server.server(window, True, "", board)
 
     def create(self, window):
         self.game_started = True

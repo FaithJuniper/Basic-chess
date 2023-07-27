@@ -22,6 +22,8 @@ if __name__ == '__main__':
             elif event.type == pygame.KEYDOWN:
                 gui.type(WIN, event)
             elif event.type == pygame.MOUSEBUTTONDOWN:
-                gui.click(WIN)
+                gui.click(WIN, board)
+                board.click()
+        board.draw(WIN)
         pygame.display.update()
     pygame.quit()

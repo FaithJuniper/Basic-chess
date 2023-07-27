@@ -4,11 +4,13 @@ import pygame
 
 
 class server:
-    def __init__(self, window, host, text):
+    def __init__(self, window, host, text, board):
         self.window = window
         self.chat_text = []
         self.writing_font = pygame.font.Font(None, 22)
         self.sender = None
+        self.board = board
+        board.set_server(self)
         if host:
             self.opp_title = "P2: "
             self.play_title = "P1: "
@@ -57,12 +59,18 @@ class server:
         while True:
             mess = sock.recv(8080)
             mess = mess.decode()
-            self.post(str(mess), self.opp_title)
+            if "##" in mess:
+                p1 = self.board.squares[int(mess[2])][int(mess[3])]
+                p2 = self.board.squares[int(mess[4])][int(mess[5])]
+                self.board.move(p1, p2)
+            else:
+                self.post(str(mess), self.opp_title)
 
     def send_message(self, message):
         # Sends messages to other player
         self.sender.send(message.encode())
-        self.post(message, self.play_title)
+        if "##" not in message:
+            self.post(message, self.play_title)
 
     def post(self, text, title):
         self.chat_text.append(title + text)
