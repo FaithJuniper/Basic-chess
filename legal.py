@@ -1,5 +1,7 @@
 
 def legal_move_white(p1, p2, squares):
+    if p1 == p2:
+        return False
     if p1.colour == "W" and (p2.colour != "W"):
         # PAWN
         if p1.figure == "P":
@@ -38,6 +40,8 @@ def legal_move_white(p1, p2, squares):
 
 
 def legal_move_black(p1, p2, squares):
+    if p1 == p2:
+        return False
     if p1.colour == "B" and p2.colour != "B":
         # PAWN
         if p1.figure == "P":

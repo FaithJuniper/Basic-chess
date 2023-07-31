@@ -2,8 +2,9 @@ import pygame
 import board
 import gui
 
-WIN = pygame.display.set_mode((760, 480))
+WIN = pygame.display.set_mode((743, 480))
 pygame.display.set_caption('Chess')
+GAME = False
 
 
 if __name__ == '__main__':
@@ -19,11 +20,16 @@ if __name__ == '__main__':
         for event in pygame.event.get():
             if event.type == pygame.QUIT:
                 run = False
-            elif event.type == pygame.KEYDOWN:
-                gui.type(WIN, event)
             elif event.type == pygame.MOUSEBUTTONDOWN:
-                gui.click(WIN, board)
-                board.click()
-        board.draw(WIN)
+                action = gui.click(WIN)
+                board.click(WIN)
+                if action == "start":
+                    GAME = True
+                elif action == "hint":
+                    print("HINT")
+        if GAME:
+            board.game_started = True
+            gui.draw_turn(WIN, board.turn)
+            board.draw(WIN)
         pygame.display.update()
     pygame.quit()

@@ -1,5 +1,4 @@
 import pygame
-
 import piece
 import legal
 
@@ -10,10 +9,9 @@ class board:
         self.white_figures = []
         self.black_figures = []
         self.selected_piece = None
-        self.server = None
-
-    def set_server(self, server):
-        self.server = server
+        self.game_started = False
+        self.turn = True
+        self.highlighted = []
 
     def draw_squares(self, window):
         # Draws the main layout of the chess board
@@ -22,6 +20,8 @@ class board:
             for col in range(row % 2, 8, 2):
                 pygame.draw.rect(window, (245, 245, 220), ((row * 50) + 40, (col * 50) + 40, 50, 50))
         pygame.draw.rect(window, (101, 78, 58), (35, 35, 410, 410), 5)
+        for col, row in self.highlighted:
+            pygame.draw.rect(window, (165, 42, 42), ((col*50)+40, (row*50)+40, 50, 50))
 
     def draw_pieces(self, window):
         # Creates chess piece objects and draws them on the board
@@ -51,27 +51,29 @@ class board:
                 piece = self.squares[row][col]
                 piece.draw(window)
 
-    def click(self):
+    def click(self, window):
         x, y = pygame.mouse.get_pos()
-        if (40 < x < 440) and (40 < y < 440):
+        if self.game_started and (40 < x < 440) and (40 < y < 440):
             col = (x - 40) // 50
             row = (y - 40) // 50
             piece = self.squares[row][col]
             if self.selected_piece is None:
                 # Selects a piece
                 self.selected_piece = piece
-                print("SELECTED")
-            elif piece == self.selected_piece:
-                # Unselects a piece
-                self.selected_piece = None
-                print("UNSELECTED")
+                self.highlighted.append((col, row))
             else:
-                # Moves selected piece to a new space
-                if legal.legal_move_white(self.selected_piece, piece, self.squares):
-                    print("CORRECT MOVE")
+                # If move is valid, moves selected piece to new spot
+                if self.turn and legal.legal_move_white(self.selected_piece, piece, self.squares):
                     self.move(self.selected_piece, piece)
-                    self.server.send_message("##" + str(self.selected_piece.row) + str(self.selected_piece.col)
-                                             + str(piece.row) + str(piece.col))
+                    self.turn = False
+                    self.highlighted.clear()
+                elif (not self.turn) and legal.legal_move_black(self.selected_piece, piece, self.squares):
+                    self.move(self.selected_piece, piece)
+                    self.turn = True
+                    self.highlighted.clear()
+                else:
+                    self.selected_piece = None
+                    self.highlighted.pop()
                 self.selected_piece = None
 
     def move(self, p1, p2):
