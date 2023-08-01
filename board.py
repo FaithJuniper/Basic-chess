@@ -1,6 +1,7 @@
 import pygame
 import piece
 import legal
+import minimax
 
 
 class board:
@@ -11,7 +12,7 @@ class board:
         self.selected_piece = None
         self.game_started = False
         self.turn = True
-        self.highlighted = []
+        self.highlighted = {}
 
     def draw_squares(self, window):
         # Draws the main layout of the chess board
@@ -21,7 +22,7 @@ class board:
                 pygame.draw.rect(window, (245, 245, 220), ((row * 50) + 40, (col * 50) + 40, 50, 50))
         pygame.draw.rect(window, (101, 78, 58), (35, 35, 410, 410), 5)
         for col, row in self.highlighted:
-            pygame.draw.rect(window, (165, 42, 42), ((col*50)+40, (row*50)+40, 50, 50))
+            pygame.draw.rect(window, self.highlighted[(col, row)], ((col*50)+40, (row*50)+40, 50, 50))
 
     def draw_pieces(self, window):
         # Creates chess piece objects and draws them on the board
@@ -51,7 +52,7 @@ class board:
                 piece = self.squares[row][col]
                 piece.draw(window)
 
-    def click(self, window):
+    def click(self):
         x, y = pygame.mouse.get_pos()
         if self.game_started and (40 < x < 440) and (40 < y < 440):
             col = (x - 40) // 50
@@ -60,7 +61,7 @@ class board:
             if self.selected_piece is None:
                 # Selects a piece
                 self.selected_piece = piece
-                self.highlighted.append((col, row))
+                self.highlighted[(col, row)] = (165, 42, 42)
             else:
                 # If move is valid, moves selected piece to new spot
                 if self.turn and legal.legal_move_white(self.selected_piece, piece, self.squares):
@@ -72,9 +73,14 @@ class board:
                     self.turn = True
                     self.highlighted.clear()
                 else:
+                    self.highlighted.pop((self.selected_piece.col, self.selected_piece.row))
                     self.selected_piece = None
-                    self.highlighted.pop()
                 self.selected_piece = None
+
+    def find_hint(self):
+        p1, p2 = minimax.hint(self, self.turn)
+        self.highlighted[(p1.col, p1.row)] = (192, 87, 87)
+        self.highlighted[(p2.col, p2.row)] = (192, 87, 87)
 
     def move(self, p1, p2):
         # Changes over piece attributes
