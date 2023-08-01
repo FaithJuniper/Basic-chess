@@ -2,6 +2,7 @@ import pygame
 import piece
 import legal
 import minimax
+import check
 
 
 class board:
@@ -64,14 +65,22 @@ class board:
                 self.highlighted[(col, row)] = (165, 42, 42)
             else:
                 # If move is valid, moves selected piece to new spot
-                if self.turn and legal.legal_move_white(self.selected_piece, piece, self.squares):
+                if self.turn and legal.legal_move_white(self.selected_piece, piece, self.squares)\
+                        and check.white_valid(self, self.selected_piece, piece):
                     self.move(self.selected_piece, piece)
                     self.turn = False
                     self.highlighted.clear()
-                elif (not self.turn) and legal.legal_move_black(self.selected_piece, piece, self.squares):
+                    # Checkmate?
+                    if check.check_black(self) and check.checkmate_black(self):
+                        pygame.quit()
+                elif (not self.turn) and legal.legal_move_black(self.selected_piece, piece, self.squares)\
+                        and check.black_valid(self, self.selected_piece, piece):
                     self.move(self.selected_piece, piece)
                     self.turn = True
                     self.highlighted.clear()
+                    # Checkmate?
+                    if check.check_white(self) and check.checkmate_white(self):
+                        pygame.quit()
                 else:
                     self.highlighted.pop((self.selected_piece.col, self.selected_piece.row))
                     self.selected_piece = None
@@ -79,6 +88,7 @@ class board:
 
     def find_hint(self):
         p1, p2 = minimax.hint(self, self.turn)
+        # Highlights recommended move
         self.highlighted[(p1.col, p1.row)] = (192, 87, 87)
         self.highlighted[(p2.col, p2.row)] = (192, 87, 87)
 

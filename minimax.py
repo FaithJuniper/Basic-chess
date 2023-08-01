@@ -1,4 +1,6 @@
 import sys
+
+import check
 import legal
 
 best_p1 = None
@@ -134,13 +136,22 @@ def minimax_black(depth, board, cpu, alpha, beta):
 
 
 def calc_score(board, turn):
+    # Calculates current board situation
     score = 0
     if turn:
         for row in board.squares:
             for p2 in row:
                 score += points[p2.colour + p2.figure]
+        if check.check_black(board):
+            score += 12
+        if check.checkmate_black(board):
+            score += 20
     else:
         for row in board.squares:
             for p2 in row:
                 score += -(points[p2.colour + p2.figure])
+        if check.check_white(board):
+            score += 12
+        if check.checkmate_white(board):
+            score += 20
     return score
