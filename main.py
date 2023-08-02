@@ -22,11 +22,15 @@ if __name__ == '__main__':
                 run = False
             elif event.type == pygame.MOUSEBUTTONDOWN:
                 action = gui.click(WIN)
-                board.click()
                 if action == "start":
                     GAME = True
                 elif action == "hint":
                     board.find_hint()
+                action = board.click(WIN)
+                if action == "W":
+                    gui.end_game(WIN, True)
+                elif action == "B":
+                    gui.end_game(WIN, False)
         if GAME:
             board.game_started = True
             gui.draw_turn(WIN, board.turn)

@@ -53,7 +53,7 @@ class board:
                 piece = self.squares[row][col]
                 piece.draw(window)
 
-    def click(self):
+    def click(self, window):
         x, y = pygame.mouse.get_pos()
         if self.game_started and (40 < x < 440) and (40 < y < 440):
             col = (x - 40) // 50
@@ -72,7 +72,7 @@ class board:
                     self.highlighted.clear()
                     # Checkmate?
                     if check.check_black(self) and check.checkmate_black(self):
-                        pygame.quit()
+                        return "W"
                 elif (not self.turn) and legal.legal_move_black(self.selected_piece, piece, self.squares)\
                         and check.black_valid(self, self.selected_piece, piece):
                     self.move(self.selected_piece, piece)
@@ -80,11 +80,12 @@ class board:
                     self.highlighted.clear()
                     # Checkmate?
                     if check.check_white(self) and check.checkmate_white(self):
-                        pygame.quit()
+                        return "B"
                 else:
                     self.highlighted.pop((self.selected_piece.col, self.selected_piece.row))
                     self.selected_piece = None
                 self.selected_piece = None
+        return ""
 
     def find_hint(self):
         p1, p2 = minimax.hint(self, self.turn)
@@ -100,15 +101,6 @@ class board:
         p1.colour = "-"
         p1.figure = "-"
         p1.picture = "Pieces/BLANK.png"
-
-    def calc_score(self):
-        # Calculates overall score
-        score = 0
-        for fig in self.white_figures:
-            score += fig.points
-        for fig in self.black_figures:
-            score += fig.points
-        print(str(score))
 
     def get_black(self):
         # Gets all black pieces on the board

@@ -93,9 +93,21 @@ class gui:
         return ""
 
     def draw_turn(self, window, colour):
+        # Displays who's turn it is
         if colour:
             pic = pygame.transform.scale(pygame.image.load("Pieces/WK.png"), (35, 35))
             window.blit(pic, (547, 44))
         else:
             pic = pygame.transform.scale(pygame.image.load("Pieces/BK.png"), (35, 35))
             window.blit(pic, (547, 44))
+
+    def end_game(self, window, colour):
+        # Displays who won
+        pygame.draw.rect(window, (245, 245, 220), (480, 110, 140, 42))
+        pygame.draw.rect(window, (101, 78, 58), (475, 105, 150, 52), 5)
+        if colour:
+            end_title = self.title_font.render("White wins!", True, (0, 0, 0))
+            window.blit(end_title, (485, 120))
+        else:
+            end_title = self.title_font.render("Black wins!", True, (0, 0, 0))
+            window.blit(end_title, (485, 120))
